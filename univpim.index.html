@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scelta Immagine</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Impostazioni generali per il corpo della pagina */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Contenitore principale */
+        .container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        /* Stile per le immagini cliccabili */
+        .image-option {
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+            width: 40%;
+            max-width: 200px; /* Massima larghezza dell'immagine */
+        }
+
+        /* Ridurre la dimensione delle immagini per dispositivi mobili */
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Grafico responsivo */
+        canvas {
+            margin-top: 30px;
+            width: 100% !important;
+            height: 250px !important; /* Impostare una dimensione fissa per il grafico */
+        }
+
+        /* Media Query per dispositivi mobili */
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .image-option {
+                width: 45%; /* Immagini più piccole per dispositivi mobili */
+            }
+            canvas {
+                height: 200px; /* Grafico un po' più piccolo su mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scegli un'immagine</h1>
+        <!-- Contenitore per le immagini da cliccare -->
+        <div id="images">
+            <div class="image-option" onclick="updateGraph(0)">
+                <img src="image1.png" alt="Scrigno">
+            </div>
+            <div class="image-option" onclick="updateGraph(1)">
+                <img src="image2.png" alt="Sirena">
+            </div>
+            <div class="image-option" onclick="updateGraph(2)">
+                <img src="image3.png" alt="Spia">
+            </div>
+            <div class="image-option" onclick="updateGraph(3)">
+                <img src="image4.png" alt="Sfinge">
+            </div>
+        </div>
+
+        <!-- Grafico a barre -->
+        <canvas id="barChart"></canvas> <!-- Grafico responsivo -->
+    </div>
+
+    <script>
+        // Array per tenere traccia delle scelte
+        let selectedImage = [0, 0, 0, 0]; // Contatori per le 4 immagini
+        // Colori per le barre, ciascun colore corrisponde all'immagine
+        const imageColors = [
+            'rgba(75, 192, 192, 1)', // Sfinge (verde più definito)
+            'rgba(54, 162, 235, 1)', // Sirena (blu intenso)
+            'rgba(255, 159, 64, 1)', // Spia (arancione brillante)
+            'rgba(255, 99, 132, 1)'  // Scrigno (rosso intenso)
+        ];
+        const borderColors = [
+            'rgba(75, 192, 192, 1)',   // Sfinge (verde)
+            'rgba(54, 162, 235, 1)',   // Sirena (blu)
+            'rgba(255, 159, 64, 1)',   // Spia (arancione)
+            'rgba(255, 99, 132, 1)'    // Scrigno (rosso)
+        ];
+        const images = [
+            'image1.png',  // Scrigno
+            'image2.png',  // Sirena
+            'image3.png',  // Spia
+            'image4.png'   // Sfinge
+        ];
+
+        const ctx = document.getElementById('barChart').getContext('2d');
+
+        // Inizializzare il grafico a barre
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Scrigno', 'Sirena', 'Spia', 'Sfinge'],
+                datasets: [{
+                    label: '',  // Rimuoviamo la scritta "Numero di Selezioni"
+                    data: selectedImage, // Dati da visualizzare nel grafico
+                    backgroundColor: imageColors, // Colori delle barre
+                    borderColor: borderColors,   // Colori del bordo
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    // Plugin per visualizzare le immagini sopra le barre
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach((dataset, i) => {
+                            const meta = chart.getDatasetMeta(i);
+                            if (meta.hidden) return;
+                            meta.data.forEach((bar, index) => {
+                                // Posizione dell'immagine sopra la barra
+                                const x = bar.x;
+                                const y = bar.y - bar.height / 2 - 10; // Posizione verticale
+                                const image = new Image();
+                                image.src = images[index]; // Usa l'immagine corretta
+                                image.onload = function() {
+                                    ctx.drawImage(image, x - 20, y, 40, 40); // Disegna l'immagine sopra la barra
+                                };
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
+        // Funzione per aggiornare il grafico quando l'utente clicca su un'immagine
+        function updateGraph(imageIndex) {
+            selectedImage[imageIndex]++; // Aumenta il contatore per l'immagine selezionata
+            chart.update(); // Aggiorna il grafico
+        }
+    </script>
+</body>
+</html>
